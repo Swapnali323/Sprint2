@@ -1,0 +1,72 @@
+package com.cg;
+
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.cg.expensemanagementsystem.ExpenseSystemDataProviderApplication;
+import com.cg.expensemanagementsystem.controller.ExpenseController;
+import com.cg.expensemanagementsystem.dao.ExpenseCodeRepository;
+import com.cg.expensemanagementsystem.entity.Expense;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = ExpenseSystemDataProviderApplication.class)
+@RunWith(SpringRunner.class)
+//@WebMvcTest
+@AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:application.properties")
+class ExpenseSystemDataProviderApplicationTests {
+
+	 @InjectMocks
+	 ExpenseController expenseController;
+	    @Mock
+	    ExpenseCodeRepository expenseRepository;
+
+	@Autowired
+	MockMvc mockMvc;
+
+	 @Before
+	    public void setUp(){
+	        mockMvc = MockMvcBuilders.standaloneSetup(expenseController)
+	                .build();
+	    }
+//	@Test
+//	void showAllExpenseTest() throws Exception {
+//		MvcResult mvcResult = mockMvc
+//				.perform(MockMvcRequestBuilders.get("/expenses").accept(MediaType.APPLICATION_JSON)).andReturn();
+//		System.out.println(mvcResult.getResponse());
+//	}
+	
+	@Test
+	public void addExpense {
+	  String jsonString = "{\n" +
+              "\"expenseCode\":1,\n" +
+              "\"expenseType\":\"iPhoneX\",\n" +
+              "\"description\":\"Mobiles\"\n" +
+              "}";
+     Expense expense = new Expense(1,"iPhoneX","Mobiles");
+      mockMvc.perform(MockMvcRequestBuilders.post("/addItem")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(jsonString))
+              .andExpect(MockMvcResultMatchers.status().isCreated())
+              .andExpect(MockMvcResultMatchers.jsonPath("$.expenseCode", Matchers.is(1)))
+              .andExpect(MockMvcResultMatchers.jsonPath("$.expenseType",Matchers.is("iPhoneX")))
+              .andExpect(MockMvcResultMatchers.jsonPath("$.description",Matchers.is("Mobiles")));
+  }
+
+
+}
